@@ -1,12 +1,23 @@
 import sublime
 import os
 
-def get_packages_list():
+__all__ = [
+    "get_packages_list"
+]
+
+def get_packages_list(ignore_packages=True):
     """
     Return a list of packages.
     """
+
     package_set = set()
     package_set.update(_get_packages_from_directory(sublime.packages_path()))
+
+    if ignore_packages:
+        ignored_package_list = sublime.load_settings(
+            "Preferences.sublime-settings").get("ignored_packages", [])
+        for ignored in ignored_package_list:
+            package_set.discard(ignored)
 
     return sorted(list(package_set))
 
