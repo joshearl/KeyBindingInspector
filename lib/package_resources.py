@@ -1,10 +1,12 @@
 import sublime
 import os
 import re
+import codecs
 
 __all__ = [
     "get_packages_list",
-    "list_package_files"
+    "list_package_files",
+    "get_resource"
 ]
 
 def get_packages_list(ignore_packages=True):
@@ -75,3 +77,29 @@ def _normalize_to_sublime_path(path):
     path = re.sub(r"^([a-zA-Z]):", "/\\1", path)
     path = re.sub(r"\\", "/", path)
     return path
+
+def get_resource(package_name, resource, encoding="utf-8"):
+    return _get_resource(package_name, resource, encoding=encoding)
+
+def _get_resource(package_name, resource, return_binary=False, encoding="utf-8"):
+    packages_path = sublime.packages_path()
+    content = None
+
+    path = None
+    if os.path.exists(os.path.join(packages_path, package_name, resource)):
+        path = os.path.join(packages_path, package_name, resource)
+        content = _get_directory_item_content(path, return_binary, encoding)
+
+    return content
+
+def _get_directory_item_content(filename, return_binary, encoding):
+    content = None
+    if os.path.exists(filename):
+        if return_binary:
+            mode = "rb"
+            encoding = None
+        else:
+            mode = "r"
+        with codecs.open(filename, mode, encoding=encoding) as file_obj:
+            content = file_obj.read()
+    return content
