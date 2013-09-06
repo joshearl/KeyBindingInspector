@@ -7,7 +7,7 @@ from lib.package_resources import *
 reload_mods = ["lib.package_resources"]
 
 for mod in reload_mods:
-    print "Reloading module " + mod + " ..."
+    print "Reloading module %s ..." % mod
     reload(sys.modules[mod])
 
 class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
