@@ -1,7 +1,14 @@
 import sublime
 import sublime_plugin
+import sys
 
 from lib.package_resources import *
+
+reload_mods = ["lib.package_resources"]
+
+for mod in reload_mods:
+    print "Reloading module " + mod + " ..."
+    reload(sys.modules[mod])
 
 class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
     def run(self):
