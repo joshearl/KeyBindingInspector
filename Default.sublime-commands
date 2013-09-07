@@ -1,0 +1,6 @@
+[
+    {
+        "caption": "Show All Key Bindings",
+        "command": "show_key_bindings"
+    }
+]
