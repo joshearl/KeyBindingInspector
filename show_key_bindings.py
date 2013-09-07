@@ -19,9 +19,10 @@ if PLATFORM == "Osx":
 
 class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
     def run(self):
-        # window.run_command("show_key_bindings")
         keymap_list = self.get_keymap_list()
-        print keymap_list
+        for keymap in keymap_list:
+            for entry in keymap:
+                print entry["keys"]
 
     def get_keymap_list(self):
         package_list = get_packages_list()
