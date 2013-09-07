@@ -2,10 +2,13 @@ import sublime
 import sublime_plugin
 import json
 import sys
+import inspect
 
 from lib.package_resources import *
 from lib.strip_commas import strip_dangling_commas
 from lib.minify_json import json_minify
+
+
 
 reload_mods = ["lib.package_resources"]
 
@@ -19,12 +22,17 @@ if PLATFORM == "Osx":
 
 class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
     def run(self):
-        keymap_list = self.get_keymap_list()
-        for keymap in keymap_list:
-            for entry in keymap:
-                print entry["keys"]
+        keyboard_shortcuts_list = []
+        key_bindings_list = self.get_key_bindings_list()
 
-    def get_keymap_list(self):
+        for key_binding in key_bindings_list:
+            for entry in key_binding:
+                keys = entry["keys"]
+                keyboard_shortcuts_list.append(keys)
+               
+        print keyboard_shortcuts_list
+
+    def get_key_bindings_list(self):
         package_list = get_packages_list()
         keymap_list = []
         
