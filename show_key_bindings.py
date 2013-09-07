@@ -8,8 +8,6 @@ from lib.package_resources import *
 from lib.strip_commas import strip_dangling_commas
 from lib.minify_json import json_minify
 
-
-
 reload_mods = ["lib.package_resources"]
 
 for mod in reload_mods:
@@ -29,8 +27,8 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
             for entry in key_binding:
                 keys = entry["keys"]
                 keyboard_shortcuts_list.append(keys)
-               
-        print keyboard_shortcuts_list
+
+        self.generate_quick_panel(keyboard_shortcuts_list)
 
     def get_key_bindings_list(self):
         package_list = get_packages_list()
@@ -63,3 +61,9 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
             filename.lower().endswith(platform_keymap_pattern):
                 package_keymap_file_list.append(filename)
         return package_keymap_file_list
+
+    def generate_quick_panel(self, key_bindings_list):
+        self.window.show_quick_panel(key_bindings_list, self.run_selected_command)
+
+    def run_selected_command(self, selected_command_index):
+        print "This doesn't quite work yet, but we're getting close!"
