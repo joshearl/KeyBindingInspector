@@ -34,7 +34,7 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
 
     def get_key_bindings_list(self):
         package_list = get_packages_list()
-        keymap_list = []
+        key_bindings_list = []
         
         for package in package_list:
             package_keymap_file_list = self.get_keymap_files_from(package)
@@ -50,9 +50,9 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
                     minified_content = minified_content.replace("\n", "\\\n")
 
                     keymap = json.loads(minified_content)
-                    keymap_list.append(keymap)
+                    key_bindings_list.append(keymap)
         
-        return keymap_list
+        return key_bindings_list
             
     def get_keymap_files_from(self, package):
         file_list = list_package_files(package)
