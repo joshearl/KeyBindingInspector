@@ -20,15 +20,16 @@ if PLATFORM == "Osx":
 
 class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
     def run(self):
-        keyboard_shortcuts_list = []
+        keyboard_shortcuts_and_commands = []
         key_bindings_list = self.get_key_bindings_list()
 
         for key_binding in key_bindings_list:
-            for entry in key_binding:
-                keys = entry["keys"]
-                keyboard_shortcuts_list.append(keys)
+            entry = []
+            entry.append(str(key_binding["keys"]))
+            entry.append(str(key_binding["command"]))
+            keyboard_shortcuts_and_commands.append(entry)
 
-        self.generate_quick_panel(keyboard_shortcuts_list)
+        self.generate_quick_panel(keyboard_shortcuts_and_commands)
 
     def get_key_bindings_list(self):
         package_list = get_packages_list()
@@ -47,8 +48,10 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
                     minified_content = strip_dangling_commas(minified_content)
                     minified_content = minified_content.replace("\n", "\\\n")
 
-                    keymap = json.loads(minified_content)
-                    key_bindings_list.append(keymap)
+                    package_keymap_list = json.loads(minified_content)
+
+                    for keymap in package_keymap_list: 
+                        key_bindings_list.append(keymap)
         
         return key_bindings_list
             
