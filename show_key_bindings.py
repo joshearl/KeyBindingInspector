@@ -3,6 +3,7 @@ import sublime_plugin
 import json
 import sys
 import inspect
+import threading
 
 from lib.package_resources import *
 from lib.strip_commas import strip_dangling_commas
@@ -40,20 +41,13 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
         for package in package_list:
             package_keymap_file_list = self.get_keymap_files_from(package)
             if (package_keymap_file_list):
-                for keymap in package_keymap_file_list:
-                    content = get_resource(package, keymap)
+                for keymap_file in package_keymap_file_list:
                     
-                    if content == None:
-                        continue
+                    package_processor = PackageProcessor()
+                    package_keymap_list = package_processor.get_package_keymap_list(package, keymap_file)
 
-                    minified_content = json_minify(content)
-                    minified_content = strip_dangling_commas(minified_content)
-                    minified_content = minified_content.replace("\n", "\\\n")
-
-                    package_keymap_list = json.loads(minified_content)
-
-                    for keymap in package_keymap_list: 
-                        key_bindings_list.append(keymap)
+                    for keymap_file in package_keymap_list: 
+                        key_bindings_list.append(keymap_file)
         
         return key_bindings_list
             
@@ -72,3 +66,18 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
 
     def run_selected_command(self, selected_command_index):
         print "This doesn't quite work yet, but we're getting close!"
+
+class PackageProcessor(object):
+    def get_package_keymap_list(self, package, keymap_file):
+        content = get_resource(package, keymap_file)
+                    
+        if content == None:
+            return []
+
+        minified_content = json_minify(content)
+        minified_content = strip_dangling_commas(minified_content)
+        minified_content = minified_content.replace("\n", "\\\n")
+
+        package_keymap_list = json.loads(minified_content)
+
+        return package_keymap_list
