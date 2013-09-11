@@ -20,6 +20,10 @@ if PLATFORM == "Osx":
     PLATFORM = "OSX"
 
 class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
+    def __init__(self, window):
+        sublime_plugin.WindowCommand.__init__(self, window)
+        self.view = window.active_view()
+
     def run(self):
         ignored_packages_list = sublime.load_settings(
             "Preferences.sublime-settings").get("ignored_packages", [])
@@ -29,14 +33,30 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
         key_binding_extractor.start()
         self.handle_key_binding_extraction(key_binding_extractor)
 
-    def handle_key_binding_extraction(self, thread):
+    def handle_key_binding_extraction(self, thread, i=0, direction=1):
         if thread.is_alive():
             print "Thread is running ..."
-            sublime.set_timeout(lambda: self.handle_key_binding_extraction(thread), 100)
+
+            if (self.view):
+                before = i % 8
+                after = (7) - before
+                if not after:
+                    direction = -1
+                if not before:
+                    direction = 1
+                i += direction
+                
+                self.view.set_status('key_binding_extractor', 'Extracting key bindings [%s=%s]' % \
+                    (' ' * before, ' ' * after))
+
+            sublime.set_timeout(lambda: self.handle_key_binding_extraction(thread, i, direction), 100)
             return
 
         print "Thread finished."
-        
+
+        if (self.view):
+            self.view.erase_status('key_binding_extractor')
+
         key_bindings_list = thread.result
         self.display_key_bindings(key_bindings_list)
 
