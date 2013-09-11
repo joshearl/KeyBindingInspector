@@ -23,6 +23,7 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
     def __init__(self, window):
         sublime_plugin.WindowCommand.__init__(self, window)
         self.view = window.active_view()
+        self.keyboard_shortcuts_and_commands = []
 
     def run(self):
         ignored_packages_list = sublime.load_settings(
@@ -61,7 +62,6 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
         self.display_key_bindings(key_bindings_list)
 
     def display_key_bindings(self, key_bindings_list):
-        keyboard_shortcuts_and_commands = []
 
         for key_binding in key_bindings_list:
             entry = []
@@ -69,15 +69,19 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
             entry.append(str(key_binding["command"]))
             if "args" in key_binding:
                 entry.append(str(key_binding["args"]))
-            keyboard_shortcuts_and_commands.append(entry)
+            self.keyboard_shortcuts_and_commands.append(entry)
         
-        self.generate_quick_panel(keyboard_shortcuts_and_commands)        
+        self.generate_quick_panel(self.keyboard_shortcuts_and_commands)        
 
     def generate_quick_panel(self, key_bindings_list):
         self.window.show_quick_panel(key_bindings_list, self.run_selected_command)
 
     def run_selected_command(self, selected_command_index):
-        print "This doesn't quite work yet, but we're getting close!"
+        if (selected_command_index == -1):
+            print "No command selected."
+            return
+        print "Selected command: " + \
+            str(self.keyboard_shortcuts_and_commands[selected_command_index])
 
 class KeyBindingExtractor(threading.Thread):
     def __init__(self, packages_path, ignored_packages_list):
