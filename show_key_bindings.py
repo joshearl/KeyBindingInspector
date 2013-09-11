@@ -35,7 +35,11 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
         self.generate_quick_panel(keyboard_shortcuts_and_commands)
 
     def get_key_bindings_list(self):
-        package_list = get_packages_list()
+        packages_path = sublime.packages_path()
+        ignored_packages_list = sublime.load_settings(
+            "Preferences.sublime-settings").get("ignored_packages", [])
+
+        package_list = get_packages_list(packages_path, ignored_packages_list)
         key_bindings_list = []
         
         for package in package_list:

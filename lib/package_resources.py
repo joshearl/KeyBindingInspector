@@ -9,19 +9,16 @@ __all__ = [
     "get_resource"
 ]
 
-def get_packages_list(ignore_packages=True):
+def get_packages_list(packages_path, ignored_packages_list):
     """
     Return a list of packages.
     """
 
     package_set = set()
-    package_set.update(_get_packages_from_directory(sublime.packages_path()))
+    package_set.update(_get_packages_from_directory(packages_path))
 
-    if ignore_packages:
-        ignored_package_list = sublime.load_settings(
-            "Preferences.sublime-settings").get("ignored_packages", [])
-        for ignored in ignored_package_list:
-            package_set.discard(ignored)
+    for ignored in ignored_packages_list:
+        package_set.discard(ignored)
 
     return sorted(list(package_set))
 
