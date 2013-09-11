@@ -21,8 +21,27 @@ if PLATFORM == "Osx":
 
 class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
     def run(self):
+        ignored_packages_list = sublime.load_settings(
+            "Preferences.sublime-settings").get("ignored_packages", [])
+        packages_path = sublime.packages_path()
+
+        key_binding_extractor = KeyBindingExtractor(packages_path, ignored_packages_list)
+        key_binding_extractor.start()
+        self.handle_key_binding_extraction(key_binding_extractor)
+
+    def handle_key_binding_extraction(self, thread):
+        if thread.is_alive():
+            print "Thread is running ..."
+            sublime.set_timeout(lambda: self.handle_key_binding_extraction(thread), 100)
+            return
+
+        print "Thread finished."
+        
+        key_bindings_list = thread.result
+        self.display_key_bindings(key_bindings_list)
+
+    def display_key_bindings(self, key_bindings_list):
         keyboard_shortcuts_and_commands = []
-        key_bindings_list = self.get_key_bindings_list()
 
         for key_binding in key_bindings_list:
             entry = []
@@ -31,15 +50,28 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
             if "args" in key_binding:
                 entry.append(str(key_binding["args"]))
             keyboard_shortcuts_and_commands.append(entry)
+        
+        self.generate_quick_panel(keyboard_shortcuts_and_commands)        
 
-        self.generate_quick_panel(keyboard_shortcuts_and_commands)
+    def generate_quick_panel(self, key_bindings_list):
+        self.window.show_quick_panel(key_bindings_list, self.run_selected_command)
+
+    def run_selected_command(self, selected_command_index):
+        print "This doesn't quite work yet, but we're getting close!"
+
+class KeyBindingExtractor(threading.Thread):
+    def __init__(self, packages_path, ignored_packages_list):
+        self.packages_path = packages_path
+        self.ignored_packages_list = ignored_packages_list
+        self.result = None
+        threading.Thread.__init__(self)
+
+    def run(self):
+        print "Starting work on background thread ..."
+        self.result = self.get_key_bindings_list()
 
     def get_key_bindings_list(self):
-        packages_path = sublime.packages_path()
-        ignored_packages_list = sublime.load_settings(
-            "Preferences.sublime-settings").get("ignored_packages", [])
-
-        package_list = get_packages_list(packages_path, ignored_packages_list)
+        package_list = get_packages_list(self.packages_path, self.ignored_packages_list)
         key_bindings_list = []
         
         for package in package_list:
@@ -54,24 +86,7 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
                         key_bindings_list.append(keymap_file)
         
         return key_bindings_list
-            
-    def get_keymap_files_from(self, package):
-        file_list = list_package_files(package)
-        platform_keymap_pattern = "default (%s).sublime-keymap" % (PLATFORM.lower())
-        package_keymap_file_list = []
-        for filename in file_list:
-            if filename.lower().endswith("default.sublime-keymap")or \
-            filename.lower().endswith(platform_keymap_pattern):
-                package_keymap_file_list.append(filename)
-        return package_keymap_file_list
 
-    def generate_quick_panel(self, key_bindings_list):
-        self.window.show_quick_panel(key_bindings_list, self.run_selected_command)
-
-    def run_selected_command(self, selected_command_index):
-        print "This doesn't quite work yet, but we're getting close!"
-
-class PackageProcessor(object):
     def get_package_keymap_list(self, package, keymap_file):
         content = get_resource(package, keymap_file)
                     
@@ -85,3 +100,13 @@ class PackageProcessor(object):
         package_keymap_list = json.loads(minified_content)
 
         return package_keymap_list
+
+    def get_keymap_files_from(self, package):
+        file_list = list_package_files(package)
+        platform_keymap_pattern = "default (%s).sublime-keymap" % (PLATFORM.lower())
+        package_keymap_file_list = []
+        for filename in file_list:
+            if filename.lower().endswith("default.sublime-keymap")or \
+            filename.lower().endswith(platform_keymap_pattern):
+                package_keymap_file_list.append(filename)
+        return package_keymap_file_list
