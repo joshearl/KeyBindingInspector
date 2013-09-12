@@ -65,7 +65,8 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
 
         for key_binding in key_bindings_list:
             entry = []
-            entry.append(str(key_binding["keys"]))
+            keys = key_binding["keys"]
+            entry.append(", ".join(keys))
             entry.append(str(key_binding["command"]))
             if "args" in key_binding:
                 entry.append(str(key_binding["args"]))
@@ -103,8 +104,7 @@ class KeyBindingExtractor(threading.Thread):
             if (package_keymap_file_list):
                 for keymap_file in package_keymap_file_list:
                     
-                    package_processor = PackageProcessor()
-                    package_keymap_list = package_processor.get_package_keymap_list(package, keymap_file)
+                    package_keymap_list = self.get_package_keymap_list(package, keymap_file)
 
                     for keymap_file in package_keymap_list: 
                         key_bindings_list.append(keymap_file)
