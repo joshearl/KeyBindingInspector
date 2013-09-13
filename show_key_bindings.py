@@ -69,7 +69,7 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
             entry.append(", ".join(keys))
             entry.append(str(key_binding["command"]))
             if "args" in key_binding:
-                entry.append(str(key_binding["args"]))
+                entry.append(json.dumps(key_binding["args"]))
             self.keyboard_shortcuts_and_commands.append(entry)
         
         self.generate_quick_panel(self.keyboard_shortcuts_and_commands)        
