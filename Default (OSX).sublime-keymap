@@ -1,0 +1,3 @@
+[
+    { "keys": ["super+alt+i"], "command": "show_key_bindings" }
+]
