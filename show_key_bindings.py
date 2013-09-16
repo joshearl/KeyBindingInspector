@@ -1,9 +1,13 @@
 import sublime
 import sublime_plugin
+import logging
 import json
 import sys
 import inspect
 import threading
+
+logging.basicConfig(format='[KeyBindingInspector] %(levelname)s %(message)s')
+logger = logging.getLogger()
 
 from lib.package_resources import *
 from lib.strip_commas import strip_dangling_commas
@@ -12,7 +16,8 @@ from lib.minify_json import json_minify
 reload_mods = ["lib.package_resources"]
 
 for mod in reload_mods:
-    print "Reloading module %s ..." % mod
+
+    logger.debug("Reloading module %s ..." % mod)
     reload(sys.modules[mod])
 
 PLATFORM = sublime.platform().title()
@@ -90,7 +95,7 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
 
     def debug_log(self, message):
         if (self.debug):
-            print message
+            logger.debug(message)
 
 class KeyBindingExtractor(threading.Thread):
     def __init__(self, settings, packages_path, ignored_packages_list):
@@ -102,7 +107,7 @@ class KeyBindingExtractor(threading.Thread):
 
     def run(self):
         if (self.debug):
-            print "Starting work on background thread ..."
+            logger.debug("Starting work on background thread ...")
         self.result = self.get_key_bindings_list()
 
     def get_key_bindings_list(self):
