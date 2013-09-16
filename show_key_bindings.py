@@ -5,6 +5,7 @@ import json
 import sys
 import inspect
 import threading
+import imp
 
 VERSION = int(sublime.version())
 ST2 = VERSION < 3000
@@ -21,12 +22,15 @@ else:
     from KeyBindingInspector.lib.strip_commas import strip_dangling_commas
     from KeyBindingInspector.lib.minify_json import json_minify
 
-reload_mods = ["lib.package_resources"]
+if (ST2):
+    reload_mods = ["lib.package_resources"]
+else:
+    reload_mods = ["KeyBindingInspector.lib.package_resources"]
 
 for mod in reload_mods:
 
     logger.debug("Reloading module %s ..." % mod)
-    reload(sys.modules[mod])
+    imp.reload(sys.modules[mod])
 
 PLATFORM = sublime.platform().title()
 if PLATFORM == "Osx":
