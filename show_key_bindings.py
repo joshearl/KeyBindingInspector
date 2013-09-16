@@ -10,8 +10,16 @@ import imp
 VERSION = int(sublime.version())
 ST2 = VERSION < 3000
 
+PLUGIN_SETTINGS = sublime.load_settings("KeyBindingInspector.sublime-settings")
+DEBUG = PLUGIN_SETTINGS.get("debug", False)
+
 logging.basicConfig(format='[KeyBindingInspector] %(levelname)s %(message)s')
 logger = logging.getLogger()
+
+if (DEBUG):
+    logger.setLevel(logging.DEBUG)
+else:
+    logger.setLevel(logging.WARNING)
 
 if (ST2):
     from lib.package_resources import *
@@ -41,11 +49,9 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
         sublime_plugin.WindowCommand.__init__(self, window)
         self.view = window.active_view()
         self.keyboard_shortcuts_and_commands = []
-        self.plugin_settings = sublime.load_settings("KeyBindingInspector.sublime-settings")
+        self.plugin_settings = PLUGIN_SETTINGS
 
     def run(self):
-        self.debug = self.plugin_settings.get("debug", False)
-
         ignored_packages_list = sublime.load_settings(
             "Preferences.sublime-settings").get("ignored_packages", [])
 
@@ -57,7 +63,7 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
 
     def handle_key_binding_extraction(self, thread, i=0, direction=1):
         if thread.is_alive():
-            self.debug_log("Thread is running ...")
+            logger.debug("Thread is running ...")
 
             if (self.view):
                 before = i % 8
@@ -74,7 +80,7 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
             sublime.set_timeout(lambda: self.handle_key_binding_extraction(thread, i, direction), 100)
             return
 
-        self.debug_log("Thread finished.")
+        logger.debug("Thread finished.")
 
         if (self.view):
             self.view.erase_status('key_binding_extractor')
@@ -100,14 +106,10 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
 
     def run_selected_command(self, selected_command_index):
         if (selected_command_index == -1):
-            self.debug_log("No command selected.")
+            logger.debug("No command selected.")
             return
-        self.debug_log("Selected command: " + \
+        logger.debug("Selected command: " + \
             str(self.keyboard_shortcuts_and_commands[selected_command_index]))
-
-    def debug_log(self, message):
-        if (self.debug):
-            logger.debug(message)
 
 class KeyBindingExtractor(threading.Thread):
     def __init__(self, settings, packages_path, ignored_packages_list):
