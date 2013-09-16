@@ -6,12 +6,20 @@ import sys
 import inspect
 import threading
 
+VERSION = int(sublime.version())
+ST2 = VERSION < 3000
+
 logging.basicConfig(format='[KeyBindingInspector] %(levelname)s %(message)s')
 logger = logging.getLogger()
 
-from lib.package_resources import *
-from lib.strip_commas import strip_dangling_commas
-from lib.minify_json import json_minify
+if (ST2):
+    from lib.package_resources import *
+    from lib.strip_commas import strip_dangling_commas
+    from lib.minify_json import json_minify
+else:
+    from KeyBindingInspector.lib.package_resources import *
+    from KeyBindingInspector.lib.strip_commas import strip_dangling_commas
+    from KeyBindingInspector.lib.minify_json import json_minify
 
 reload_mods = ["lib.package_resources"]
 
