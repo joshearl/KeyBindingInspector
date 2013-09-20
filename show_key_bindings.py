@@ -6,6 +6,7 @@ import sys
 import inspect
 import threading
 import imp
+import os
 
 VERSION = int(sublime.version())
 ST2 = VERSION < 3000
@@ -55,9 +56,22 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
         ignored_packages_list = sublime.load_settings(
             "Preferences.sublime-settings").get("ignored_packages", [])
 
-        packages_path = sublime.packages_path()
+        package_paths_list = []
 
-        key_binding_extractor = KeyBindingExtractor(self.plugin_settings, packages_path, ignored_packages_list)
+        if (ST2):
+            packages_path = package_paths_list.append(sublime.packages_path())
+            if (packages_path):
+                package_paths_list.append(packages_path)
+        else:
+            packages_path = os.path.dirname(sublime.installed_packages_path()) + os.sep + "Packages"
+            if (packages_path):
+                package_paths_list.append(packages_path)
+
+            packages_path = os.path.dirname(sublime.executable_path()) + os.sep + "Packages"
+            if (packages_path):
+                package_paths_list.append(packages_path)
+
+        key_binding_extractor = KeyBindingExtractor(self.plugin_settings, package_paths_list, ignored_packages_list)
         key_binding_extractor.start()
         self.handle_key_binding_extraction(key_binding_extractor)
 
@@ -96,7 +110,9 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
             entry.append(", ".join(keys))
             entry.append(str(key_binding["command"]))
             if "args" in key_binding:
-                entry.append(json.dumps(key_binding["args"]))
+                entry.append(str(json.dumps(key_binding["args"])))
+            else:
+                entry.append("")
             self.keyboard_shortcuts_and_commands.append(entry)
         
         self.generate_quick_panel(self.keyboard_shortcuts_and_commands)        
@@ -112,9 +128,9 @@ class ShowKeyBindingsCommand(sublime_plugin.WindowCommand):
             str(self.keyboard_shortcuts_and_commands[selected_command_index]))
 
 class KeyBindingExtractor(threading.Thread):
-    def __init__(self, settings, packages_path, ignored_packages_list):
+    def __init__(self, settings, package_paths_list, ignored_packages_list):
         self.debug = settings.get("debug", False)
-        self.packages_path = packages_path
+        self.package_paths_list = package_paths_list
         self.ignored_packages_list = ignored_packages_list
         self.result = None
         threading.Thread.__init__(self)
@@ -125,24 +141,25 @@ class KeyBindingExtractor(threading.Thread):
         self.result = self.get_key_bindings_list()
 
     def get_key_bindings_list(self):
-        package_list = get_packages_list(self.packages_path, self.ignored_packages_list)
         key_bindings_list = []
-        
-        for package in package_list:
-            package_keymap_file_list = self.get_keymap_files_from(package)
-            if (package_keymap_file_list):
-                for keymap_file in package_keymap_file_list:
-                    
-                    package_keymap_list = self.get_package_keymap_list(package, keymap_file)
 
-                    for keymap_file in package_keymap_list: 
-                        key_bindings_list.append(keymap_file)
-        
+        for package_path in self.package_paths_list:
+            package_list = get_packages_list(package_path, self.ignored_packages_list)
+
+            for package in package_list:
+                package_keymap_file_list = self.get_keymap_files_from(package)
+                if (package_keymap_file_list):
+                    for keymap_file in package_keymap_file_list:
+                        
+                        package_keymap_list = self.get_package_keymap_list(package, keymap_file)
+
+                        for keymap_file in package_keymap_list: 
+                            key_bindings_list.append(keymap_file)
+            
         return key_bindings_list
 
     def get_package_keymap_list(self, package, keymap_file):
         content = get_resource(package, keymap_file)
-                    
         if content == None:
             return []
 
