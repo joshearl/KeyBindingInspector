@@ -1,0 +1,5 @@
+Thanks for installing the KeyBindingInspector plugin.
+
+I built the initial version of this plugin as a learning exercise while working on a chapter for my Sublime Text book, http://sublimeproductivity.com.
+
+If you find this plugin helpful and would like to help improve or maintain it, please reach out to me via the plugin's Github page at https://github.com/joshearl/KeyBindingInspector.

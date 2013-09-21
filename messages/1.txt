@@ -1,0 +1,4 @@
+This is a beta release. Known issues include:
+- Not tested on Linux, OS X.
+- Sometimes the status bar animation doesn't display when multiple panes are open.
+- Commands don't actually run when selected.
